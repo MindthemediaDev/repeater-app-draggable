@@ -1,16 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import {
     Button,
-    EditorToolbarButton,
     Table,
     TableBody,
-    TableRow,
-    TableCell,
-    TextField,
 } from '@contentful/forma-36-react-components';
 import tokens from '@contentful/forma-36-tokens';
 import { FieldExtensionSDK } from '@contentful/app-sdk';
 import { v4 as uuid } from 'uuid';
+
+
+
+import DraggableFieldItem from "./DraggableFieldItem";
 
 interface FieldProps {
     sdk: FieldExtensionSDK;
@@ -18,6 +18,7 @@ interface FieldProps {
 
 /** An Item which represents an list item of the repeater app */
 interface Item {
+    index: number;
     id: string;
     key: string;
     value: string;
@@ -28,6 +29,7 @@ interface Item {
 */
 function createItem(): Item {
     return {
+        index: 0,
         id: uuid(),
         key: '',
         value: '',
@@ -79,38 +81,52 @@ const Field = (props: FieldProps) => {
         props.sdk.field.setValue(items.filter((i) => i.id !== item.id));
     };
 
+    /*
+    const moveItemUp = (item: Item) => {
+        let copyItems = items;
+        
+        // Find index of item that was clicked
+        const indexOfItem = copyItems.indexOf(item);
+        
+        // Get item from items array
+        const element = copyItems.splice(indexOfItem, 1)[0];
+
+        // Insert item into array at new index
+        copyItems.splice(indexOfItem-1, 0, element);
+
+        // Update items 
+        props.sdk.field.setValue(copyItems);
+    }
+    const moveItemDown = (item: Item) => {
+        setItems([]);
+        let copyItems = items;
+        
+        // Find index of item that was clicked
+        const indexOfItem = copyItems.indexOf(item);
+        
+        // Get item from items array
+        const element = copyItems.splice(indexOfItem, 1)[0];
+
+        // Insert item into array at new index
+        copyItems.splice(indexOfItem+1, 0, element);
+
+        // Update items 
+        props.sdk.field.setValue(copyItems);
+    }*/
+
     return (
         <div>
             <Table>
                 <TableBody>
-                    {items.map((item) => (
-                        <TableRow key={item.id}>
-                            <TableCell>
-                                <TextField
-                                    id="key"
-                                    name="key"
-                                    labelText="Item Name"
-                                    value={item.key}
-                                    onChange={createOnChangeHandler(item, 'key')}
-                                />
-                            </TableCell>
-                            <TableCell>
-                                <TextField
-                                    id="value"
-                                    name="value"
-                                    labelText={valueName}
-                                    value={item.value}
-                                    onChange={createOnChangeHandler(item, 'value')}
-                                />
-                            </TableCell>
-                            <TableCell align="right">
-                                <EditorToolbarButton
-                                    label="delete"
-                                    icon="Delete"
-                                    onClick={() => deleteItem(item)}
-                                />
-                            </TableCell>
-                        </TableRow>
+                    {items.map((item,index) => (
+                        <DraggableFieldItem 
+                            index={index}
+                            item={item} 
+                            valueName={valueName} 
+                            createOnChangeHandler={createOnChangeHandler} 
+                            deleteItem={deleteItem}
+                            moveDraggableItem={() => {}}
+                        ></DraggableFieldItem>
                     ))}
                 </TableBody>
             </Table>
