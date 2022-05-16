@@ -1,14 +1,13 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import {
     Button,
-    Table,
-    TableBody,
 } from '@contentful/forma-36-react-components';
 import tokens from '@contentful/forma-36-tokens';
 import { FieldExtensionSDK } from '@contentful/app-sdk';
 import { v4 as uuid } from 'uuid';
 
-
+import { DndProvider } from 'react-dnd'
+import { HTML5Backend } from 'react-dnd-html5-backend'
 
 import DraggableFieldItem from "./DraggableFieldItem";
 
@@ -81,55 +80,46 @@ const Field = (props: FieldProps) => {
         props.sdk.field.setValue(items.filter((i) => i.id !== item.id));
     };
 
-    /*
-    const moveItemUp = (item: Item) => {
-        let copyItems = items;
-        
-        // Find index of item that was clicked
-        const indexOfItem = copyItems.indexOf(item);
-        
-        // Get item from items array
-        const element = copyItems.splice(indexOfItem, 1)[0];
+    const moveDraggableItem = useCallback(
+        (dragIndex:number, hoverIndex:number) => {
+            const dragItem = items[dragIndex]
+            const hoverItem = items[hoverIndex]
 
-        // Insert item into array at new index
-        copyItems.splice(indexOfItem-1, 0, element);
+            const updatedItems = [...items]
+            updatedItems[dragIndex] = hoverItem
+            updatedItems[hoverIndex] = dragItem
 
-        // Update items 
-        props.sdk.field.setValue(copyItems);
-    }
-    const moveItemDown = (item: Item) => {
-        setItems([]);
-        let copyItems = items;
-        
-        // Find index of item that was clicked
-        const indexOfItem = copyItems.indexOf(item);
-        
-        // Get item from items array
-        const element = copyItems.splice(indexOfItem, 1)[0];
+            props.sdk.field.setValue(updatedItems);
+        },
+        [items,props.sdk],
+    )
 
-        // Insert item into array at new index
-        copyItems.splice(indexOfItem+1, 0, element);
-
-        // Update items 
-        props.sdk.field.setValue(copyItems);
-    }*/
+    const renderFieldItem = useCallback(
+        (item: Item, index: number, valueName: String, createOnChangeHandler: Function, deleteItem: Function, moveDraggableItem: Function ) => {
+          return (
+            <DraggableFieldItem 
+                key={item.id}
+                index={index}
+                item={item} 
+                valueName={valueName} 
+                createOnChangeHandler={createOnChangeHandler} 
+                deleteItem={deleteItem}
+                moveDraggableItem={(dragIndex:number, hoverIndex:number) => moveDraggableItem(dragIndex, hoverIndex)}
+            ></DraggableFieldItem>
+          )
+        },
+        [],
+      )
 
     return (
         <div>
-            <Table>
-                <TableBody>
+            <DndProvider backend={HTML5Backend}>
+                <div>
                     {items.map((item,index) => (
-                        <DraggableFieldItem 
-                            index={index}
-                            item={item} 
-                            valueName={valueName} 
-                            createOnChangeHandler={createOnChangeHandler} 
-                            deleteItem={deleteItem}
-                            moveDraggableItem={() => {}}
-                        ></DraggableFieldItem>
+                        renderFieldItem(item, index, valueName,createOnChangeHandler,deleteItem, (dragIndex:number, hoverIndex:number) => moveDraggableItem(dragIndex, hoverIndex))
                     ))}
-                </TableBody>
-            </Table>
+                </div>
+            </DndProvider>      
             <Button
                 buttonType="naked"
                 onClick={addNewItem}

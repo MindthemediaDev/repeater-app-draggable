@@ -1,13 +1,14 @@
-import React, { JSXElementConstructor, ReactElement, useEffect, useRef } from 'react';
+import React, { useRef } from 'react';
 
 import {
     EditorToolbarButton,
-    TableRow,
-    TableCell,
     TextField,
+    Grid,
+    Icon
 } from '@contentful/forma-36-react-components';
 
-import { DragLayerMonitor, DropTargetMonitor, useDrag, useDrop } from "react-dnd";
+import type { Identifier, XYCoord } from 'dnd-core'
+import { useDrag, useDrop } from "react-dnd";
 
 interface Item {
     index: number;
@@ -25,65 +26,83 @@ interface DraggableFieldItemProps {
     moveDraggableItem: Function;
 }
 
-/*<TableCell align="left">
-    <EditorToolbarButton
-        label="delete"
-        icon="ChevronUp"
-        onClick={() => moveItemUp(props.item)}
-    />
-    <EditorToolbarButton
-        label="delete"
-        icon="ChevronDown"
-        onClick={() => moveItemDown(props.item)}
-    />
-</TableCell>*/
 
 const DraggableFieldItem = (props: DraggableFieldItemProps) => {
 
-
     // useDrag - the list item is draggable
     const [{ isDragging }, dragRef] = useDrag({
-        type: 'item',
-        item: { index: String },
+        type: 'DraggableFieldItem',
+        item: { index: props.index },
         collect: (monitor) => ({
             isDragging: monitor.isDragging(),
         }),
     })
 
-
     // useDrop - the list item is also a drop area
-    const [spec, dropRef] = useDrop({
-        accept: 'item',
+    // eslint-disable-next-line
+    const [spec, dropRef] = useDrop<
+        Item,
+        void,
+        { handlerId: Identifier | null }
+    >({
+        accept: 'DraggableFieldItem',
         hover: (item: Item, monitor: any) => {
+            if (!ref.current) {
+                return
+            }
+            
             const dragIndex = item.index;
             const hoverIndex = props.index;
+
+            if (dragIndex === hoverIndex) {
+                return
+            }
+
+            // Determine rectangle on screen
             const hoverBoundingRect = ref.current?.getBoundingClientRect()
-            const hoverMiddleY = (hoverBoundingRect.bottom - hoverBoundingRect.top) / 2
-            const hoverActualY = monitor.getClientOffset().y - hoverBoundingRect.top
 
-            // if dragging down, continue only when hover is smaller than middle Y
-            if (dragIndex < hoverIndex && hoverActualY < hoverMiddleY) return
-            // if dragging up, continue only when hover is bigger than middle Y
-            if (dragIndex > hoverIndex && hoverActualY > hoverMiddleY) return
+            // Get vertical middle
+            const hoverMiddleY =
+                (hoverBoundingRect.bottom - hoverBoundingRect.top) / 2
 
+            // Determine mouse position
+            const clientOffset = monitor.getClientOffset()
+
+            // Get pixels to the top
+            const hoverClientY = (clientOffset as XYCoord).y - hoverBoundingRect.top
+
+            // Only perform the move when the mouse has crossed half of the items height
+            // When dragging downwards, only move when the cursor is below 50%
+            // When dragging upwards, only move when the cursor is above 50%
+
+            // Dragging downwards
+            if (dragIndex < hoverIndex && hoverClientY < hoverMiddleY) {
+                return
+            }
+
+            // Dragging upwards
+            if (dragIndex > hoverIndex && hoverClientY > hoverMiddleY) {
+                return
+            }
             props.moveDraggableItem(dragIndex, hoverIndex)
             item.index = hoverIndex
         },
     })
 
     // Join the 2 refs together into one (both draggable and can be dropped on)
-    const ref = useRef<any>(null)
-    const dragDropRef = dragRef(dropRef(ref)) as React.LegacyRef<HTMLTableRowElement>;
+    const ref = useRef<HTMLDivElement>(null)
+    const dragDropRef = dragRef(dropRef(ref)) as React.LegacyRef<HTMLDivElement>;
 
     // Make items being dragged transparent, so it's easier to see where we drop them
     const opacity = isDragging ? 0 : 1
-
-
-
+    const pointerEvents = isDragging ? 'none' : 'auto';
 
     return(
-        <TableRow key={props.item.id} ref={dragDropRef} style={{ opacity }}>
-            <TableCell>
+        <div key={props.item.id} ref={dragDropRef} style={{ opacity, pointerEvents }}>
+            <Grid columns={'auto 1fr 1fr auto'}>
+                <div style={{cursor: 'grab'}}>
+                    <Icon color="muted" size="small" icon="Drag" />
+                </div>
                 <TextField
                     id="key"
                     name="key"
@@ -91,8 +110,6 @@ const DraggableFieldItem = (props: DraggableFieldItemProps) => {
                     value={props.item.key}
                     onChange={props.createOnChangeHandler(props.item, 'key')}
                 />
-            </TableCell>
-            <TableCell>
                 <TextField
                     id="value"
                     name="value"
@@ -100,15 +117,13 @@ const DraggableFieldItem = (props: DraggableFieldItemProps) => {
                     value={props.item.value}
                     onChange={props.createOnChangeHandler(props.item, 'value')}
                 />
-            </TableCell>
-            <TableCell align="right">
                 <EditorToolbarButton
                     label="delete"
                     icon="Delete"
                     onClick={() => props.deleteItem(props.item)}
                 />
-            </TableCell>
-        </TableRow>     
+            </Grid>
+        </div> 
     )
 } 
 
