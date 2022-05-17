@@ -113,7 +113,7 @@ const DraggableFieldItem = (props: DraggableFieldItemProps) => {
     return(
         <div key={props.item.id} style={{ opacity }} ref={dragDropRef} data-handler-id={handlerId}>
             <Grid columns={'auto 1fr 1fr auto'}>
-                <div style={{cursor: 'grab'}} >
+                <div style={{cursor: 'grab', paddingTop: 7}} >
                     <Icon color="muted" size="small" icon="Drag" />
                 </div>
                 <div draggable={true} onDragStart={event => event.preventDefault()}>
