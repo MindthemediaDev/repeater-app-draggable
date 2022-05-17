@@ -18,6 +18,7 @@ interface Item {
 }
 
 interface DraggableFieldItemProps {
+    id: any;
     index: number;
     item: Item;
     valueName: any;
@@ -32,7 +33,7 @@ const DraggableFieldItem = (props: DraggableFieldItemProps) => {
     // useDrag - the list item is draggable
     const [{ isDragging }, dragRef] = useDrag({
         type: 'DraggableFieldItem',
-        item: { index: props.index },
+        item: { id: props.id, index: props.index },
         collect: (monitor) => ({
             isDragging: monitor.isDragging(),
         }),
@@ -40,13 +41,18 @@ const DraggableFieldItem = (props: DraggableFieldItemProps) => {
 
     // useDrop - the list item is also a drop area
     // eslint-disable-next-line
-    const [spec, dropRef] = useDrop<
+    const [{ handlerId }, dropRef] = useDrop<
         Item,
         void,
         { handlerId: Identifier | null }
     >({
         accept: 'DraggableFieldItem',
-        hover: (item: Item, monitor: any) => {
+        collect(monitor) {
+            return {
+              handlerId: monitor.getHandlerId(),
+            }
+        },
+        hover: (item: Item, monitor) => {
             if (!ref.current) {
                 return
             }
@@ -62,8 +68,7 @@ const DraggableFieldItem = (props: DraggableFieldItemProps) => {
             const hoverBoundingRect = ref.current?.getBoundingClientRect()
 
             // Get vertical middle
-            const hoverMiddleY =
-                (hoverBoundingRect.bottom - hoverBoundingRect.top) / 2
+            const hoverMiddleY = (hoverBoundingRect.bottom - hoverBoundingRect.top) / 2
 
             // Determine mouse position
             const clientOffset = monitor.getClientOffset()
@@ -89,34 +94,50 @@ const DraggableFieldItem = (props: DraggableFieldItemProps) => {
         },
     })
 
+    const onFocus = () => {
+        
+    }
+
+    const onBlur = () => {
+        
+    }
+
     // Join the 2 refs together into one (both draggable and can be dropped on)
     const ref = useRef<HTMLDivElement>(null)
     const dragDropRef = dragRef(dropRef(ref)) as React.LegacyRef<HTMLDivElement>;
 
     // Make items being dragged transparent, so it's easier to see where we drop them
-    const opacity = isDragging ? 0 : 1
-    const pointerEvents = isDragging ? 'none' : 'auto';
+    const opacity = isDragging ? 0.3 : 1
+    //const pointerEvents = isDragging ? 'none' : 'auto';
 
     return(
-        <div key={props.item.id} ref={dragDropRef} style={{ opacity, pointerEvents }}>
+        <div key={props.item.id} style={{ opacity }} ref={dragDropRef} data-handler-id={handlerId}>
             <Grid columns={'auto 1fr 1fr auto'}>
-                <div style={{cursor: 'grab'}}>
+                <div style={{cursor: 'grab'}} >
                     <Icon color="muted" size="small" icon="Drag" />
                 </div>
-                <TextField
-                    id="key"
-                    name="key"
-                    labelText="Item Name"
-                    value={props.item.key}
-                    onChange={props.createOnChangeHandler(props.item, 'key')}
-                />
-                <TextField
-                    id="value"
-                    name="value"
-                    labelText={props.valueName}
-                    value={props.item.value}
-                    onChange={props.createOnChangeHandler(props.item, 'value')}
-                />
+                <div draggable={true} onDragStart={event => event.preventDefault()}>
+                    <TextField
+                        id="key"
+                        name="key"
+                        labelText={"Item Name"}
+                        value={props.item.key}
+                        onChange={props.createOnChangeHandler(props.item, 'key')}
+                        onBlur={onBlur}
+                        onFocus={onFocus}
+                    />
+                </div>
+                <div draggable={true} onDragStart={event => event.preventDefault()}>
+                    <TextField
+                        id="value"
+                        name="value"
+                        labelText={props.valueName}
+                        value={props.item.value}
+                        onChange={props.createOnChangeHandler(props.item, 'value')}
+                        onBlur={onBlur}
+                        onFocus={onFocus}
+                    />
+                </div>
                 <EditorToolbarButton
                     label="delete"
                     icon="Delete"

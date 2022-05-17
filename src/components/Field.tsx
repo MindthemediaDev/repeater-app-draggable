@@ -98,6 +98,7 @@ const Field = (props: FieldProps) => {
         (item: Item, index: number, valueName: String, createOnChangeHandler: Function, deleteItem: Function, moveDraggableItem: Function ) => {
           return (
             <DraggableFieldItem 
+                id={item.id}
                 key={item.id}
                 index={index}
                 item={item} 
