@@ -108,7 +108,6 @@ const DraggableFieldItem = (props: DraggableFieldItemProps) => {
 
     // Make items being dragged transparent, so it's easier to see where we drop them
     const opacity = isDragging ? 0.3 : 1
-    //const pointerEvents = isDragging ? 'none' : 'auto';
 
     return(
         <div key={props.item.id} style={{ opacity }} ref={dragDropRef} data-handler-id={handlerId}>
