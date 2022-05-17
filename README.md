@@ -2,14 +2,16 @@
 
 Added drag functionality to rows
 
+![Repeater App UI](./assets/repeater-draggable-example.gif)
+
+
+
 The Repeater App creates a repeatable list of key-value pairs in the Contentful web app.
 Key-value pairs are two pieces of associated information such as:
 
 -   Ingredients list (Flour, 500 grams)
 -   Item variations and amount in stock (T-Shirt, 5 left)
 -   Statistics (Color variation, 5%)
-
-![Repeater App UI](./assets/repeater-draggable-example.gif)
 
 The Repeater app utilizes the Contentful [JSON Field](https://www.contentful.com/developers/docs/concepts/data-model/#:~:text=JSON%20Object) to store a simple `Item` data stucture:
 
