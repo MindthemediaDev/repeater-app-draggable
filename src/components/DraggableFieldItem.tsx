@@ -94,14 +94,6 @@ const DraggableFieldItem = (props: DraggableFieldItemProps) => {
         },
     })
 
-    const onFocus = () => {
-        
-    }
-
-    const onBlur = () => {
-        
-    }
-
     // Join the 2 refs together into one (both draggable and can be dropped on)
     const ref = useRef<HTMLDivElement>(null)
     const dragDropRef = dragRef(dropRef(ref)) as React.LegacyRef<HTMLDivElement>;
@@ -122,8 +114,6 @@ const DraggableFieldItem = (props: DraggableFieldItemProps) => {
                         labelText={"Item Name"}
                         value={props.item.key}
                         onChange={props.createOnChangeHandler(props.item, 'key')}
-                        onBlur={onBlur}
-                        onFocus={onFocus}
                     />
                 </div>
                 <div draggable={true} onDragStart={event => event.preventDefault()}>
@@ -133,8 +123,6 @@ const DraggableFieldItem = (props: DraggableFieldItemProps) => {
                         labelText={props.valueName}
                         value={props.item.value}
                         onChange={props.createOnChangeHandler(props.item, 'value')}
-                        onBlur={onBlur}
-                        onFocus={onFocus}
                     />
                 </div>
                 <EditorToolbarButton
